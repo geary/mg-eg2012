@@ -1,5 +1,5 @@
 application: egypt-election-2012-demo
-version: fr2012
+version: eg2012
 runtime: python27
 threadsafe: no
 api_version: 1
