@@ -87,5 +87,5 @@ opt.writeScript(
 
 opt.writeScript( 'js/polygonzo.js', opt.nocache );
 opt.writeScript( 'js/scriptino.js', opt.nocache );
-opt.writeScript( 'js/elections-eg.js', opt.nocache );
-opt.writeScript( 'js/results-map-eg.js', opt.nocache );
+opt.writeScript( 'js/elections-fr.js', opt.nocache );
+opt.writeScript( 'js/results-map-fr.js', opt.nocache );

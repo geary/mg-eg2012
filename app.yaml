@@ -1,8 +1,16 @@
-application: egypt-election-2012-demo
-version: 1
-runtime: python
+application: election-maps
+version: fr2012
+runtime: python27
+threadsafe: no
 api_version: 1
 
+default_expiration: "2m"
+
 handlers:
-- url: /.*
-  script: main.py
+
+- url: /(results/vote-data|results/embed)
+  script: results-app.py
+  
+- url: /results/(css/.*|images/.*|js/.*|locale/.*|shapes/.*)
+  static_files: static/\1
+  upload: static/(css/.*|images/.*|js/.*|locale/.*|shapes/.*)

@@ -26,10 +26,19 @@ if( $.browser.msie ) {
 
 opt.randomized = params.randomize || params.zero;
 
-var year = params.year in elections ? +params.year : 2012;
-var parties = elections[year];
-var party = params.party in parties ? params.party : 'fr';
-var election = parties[party];
+var defaultElectionKey = '2012-pres-1';
+params.year = params.year || '2012';
+params.contest = params.contest || 'pres';
+params.round = params.round || '2';
+
+var electionKey, election;
+setElection();
+
+function setElection() {
+	electionKey = [ params.year, params.contest, params.round ].join( '-' );
+	election = elections[electionKey] || elections[defaultElectionKey];
+}
+
 var currentCandidate;
 
 if( params.date ) {
@@ -154,12 +163,13 @@ document.body.scroll = 'no';
 document.write(
 	'<style type="text/css">',
 		'html, body { width:', ww, 'px; height:', wh, 'px; margin:0; padding:0; overflow:hidden; color:#222; background-color:white; }',
-		'#legend, #maptip { font-family: Arial,sans-serif; font-size: ', opt.fontsize, '; }',
+		'#topbar, #sidebar, #maptip { font-family: Arial,sans-serif; font-size: ', opt.fontsize, '; background-color:white; }',
+		'#topbar { position:absolute; left:', sidebarWidth, 'px; top:0; width:', ww - sidebarWidth, 'px; }',
 		'a { font-size:13px; text-decoration:none; color:#1155CC; }',
 		'a:hover { text-decoration:underline; }',
 		//'a:visited { color:#6611CC; }',
-		'a.button { display:inline-block; cursor:default; background-color:whiteSmoke; background-image:linear-gradient(top,#F5F5F5,#F1F1F1); border:1px solid #DCDCDC; border:1px solid rgba(0,0,0,0.1); border-radius:2px; box-shadow:none; color:#444; font-weight:bold; font-size:11px; height:27px; line-height:27px; padding:0 7px; }',
-		'a.button.hover { background-color: #F6F6F6; background-image:linear-gradient(top,#F8F8F8,#F1F1F1); border:1px solid #C6C6C6; box-shadow:0px 1px 1px rgba(0,0,0,0.1); color:#222; }',
+		'a.button { display:inline-block; cursor:default; background-color:whiteSmoke; background-image:linear-gradient(top,#F5F5F5,#F1F1F1); border:1px solid #DCDCDC; border:1px solid rgba(0,0,0,0.1); border-radius:2px; box-shadow:none; color:#444; font-weight:bold; font-size:11px; xheight:27px; xline-height:27px; padding:2px 6px; }',
+		'a.button.hover { background-color: #F6F6F6; background-image:linear-gradient(top,#F8F8F8,#F1F1F1); border:1px solid #C6C6C6; box-shadow:0px 1px 1px rgba(0,0,0,0.1); color:#222; text-decoration:none; }',
 		'a.button.selected { background-color: #EEE; background-image:linear-gradient(top,#EEE,#E0E0E0); border:1px solid #CCC; box-shadow:inset 0px 1px 2px rgba(0,0,0,0.1); color:#333; }',
 		'#outer {}',
 		'.barvote { font-weight:bold; color:white; }',
@@ -169,8 +179,6 @@ document.write(
 		'div.body-text, div.body-text label { font-size:13px; }',
 		'div.faint-text { font-size:12px; color:#777; }',
 		'div.small-text, a.small-text { font-size:11px; }',
-		'div.topbar-delegates { font-size:21px; line-height:21px; font-weight:bold; }',
-		'body.narrow #topbar div.candidate-name { display:none; }',
 		'.content table { xwidth:100%; }',
 		'.content .contentboxtd { width:7%; }',
 		'.content .contentnametd { xfont-size:24px; xwidth:18%; }',
@@ -206,10 +214,9 @@ document.write(
 		'#selectors { background-color:#D0E3F8; }',
 		'#selectors, #selectors * { font-size:14px; }',
 		'#selectors label { font-weight:bold; }',
-		'#selectors, #legend { width:100%; /*border-bottom:1px solid #C2C2C2;*/ }',
-		'#legend { background-color:white; }',
+		'#selectors { width:100%; /*border-bottom:1px solid #C2C2C2;*/ }',
 		'body.tv #legend { margin-top:8px; }',
-		'body.sidebar #legend { width:', sidebarWidth, 'px; }',
+		'#sidebar { width:', sidebarWidth, 'px; }',
 		'#sidebar table.candidates { width:100%; }',
 		'table.candidates td { border-top:1px solid #E7E7E7; }',
 		'#maptip table.candidates { width:100%; }',
@@ -324,8 +331,11 @@ function contentTable() {
 			//		//'<label for="chkCounties">', 'countiesCheckbox'.T(), '</label>',
 			//	'</div>',
 			//'</div>',
-			'<div id="legend">',
-				formatLegendTable( [] ),
+			'<div id="sidebar">',
+				formatSidebarTable( [] ),
+			'</div>',
+			'<div id="topbar">',
+				formatTopbar(),
 			'</div>',
 			'<div style="width:100%;">',
 				'<div id="map" style="width:100%; height:100%;">',
@@ -335,7 +345,7 @@ function contentTable() {
 	);
 }
 
-function formatLegendTable( cells ) {
+function formatSidebarTable( cells ) {
 	function filler() {
 		return S(
 			'<td class="legend-filler">',
@@ -360,6 +370,32 @@ function formatLegendTable( cells ) {
 	);
 }
 
+	function formatTopbar() {
+		return S(
+			'<div id="topbar-content" style="position:relative;">',
+				'<div style="margin:0; padding:3px; float:right;">',
+					//'<a class="button', params.year == 2007 ? ' selected' : '', '" id="btn2007">',
+					//	2007,
+					//'</a>',
+					//'&nbsp;',
+					//'<a class="button', params.year == 2012 ? ' selected' : '', '" id="btn2012">',
+					//	2012,
+					//'</a>',
+					'&nbsp;&nbsp;&nbsp;',
+					'<a class="button', params.round == 1 ? ' selected' : '', '" id="btnRound1">',
+						'round1'.T(),
+					'</a>',
+					'&nbsp;',
+					'<a class="button', params.round == 2 ? ' selected' : '', '" id="btnRound2">',
+						'round2'.T(),
+					'</a>',
+				'</div>',
+				'<div style="clear:both;">',
+				'</div>',
+			'</div>'
+		);
+	}
+	
 function nationalEnabled() {
 	return ! current.national;
 }
@@ -440,6 +476,8 @@ function nationalEnabled() {
 				var geo = json[kind];
 				indexFeatures( geo );
 			}
+			var tweak = tweakGeoJSON[geoid];
+			tweak && tweak( json, geoid );
 			oneTime();
 		}
 		//setCounties( true );
@@ -453,6 +491,47 @@ function nationalEnabled() {
 		for( var feature, i = -1;  feature = features[++i]; ) {
 			by[feature.id] = feature;
 		}
+	}
+	
+	var tweakGeoJSON = {
+		FR: function( json, geoid ) {
+			var features = geoJSON.FR.departement.features;
+			features.by['986'].click = false;  // Wallis et Futuna
+			features.by['987'].click = false;  // French Polynesia
+			addLivingAbroad( features );
+		}
+	}
+	
+	function addLivingAbroad( features ) {
+		var radius = 100000;
+		feature = {
+			bbox: [ -radius, -radius, radius, radius ],
+			centroid: [ 0, 0],
+			click: false,
+			draw: false,
+			geometry: {
+				coordinates: drawCircle( radius, 32 ),
+				type: 'Polygon'
+			},
+			id: '099',
+			name: "Fran&ccedil;ais de l'Etranger",
+			type: 'Feature'
+		};
+		features.push( feature );
+		features.by['099'] = feature;
+	}
+	
+	function drawCircle( radius, steps ) {
+		var ring = [];
+		var pi2 = Math.PI * 2;
+		for( var i = 0;  i < steps;  ++i ) {
+			ring.push([
+				radius * Math.sin( i / steps * pi2 ),
+				radius * Math.cos( i / steps * pi2 )
+			]);
+		}
+		ring.push( ring[0] );
+		return [ ring ];
 	}
 	
 	function setPlayback() {
@@ -578,17 +657,10 @@ function nationalEnabled() {
 		]);
 	}
 	
-	var useSidebar;
-	function setSidebar() {
-		useSidebar = true;
-		$body.toggleClass( 'sidebar', useSidebar );
-	}
-	
 	$body.addClass( autoplay() ? 'autoplay' : 'interactive' );
 	$body.addClass( tv() ? 'tv' : 'web' );
-	setSidebar();
 	// TODO: refactor with duplicate code in geoReady() and resizeViewNow()
-	var mapWidth = ww - ( useSidebar ? sidebarWidth : 0 );
+	var mapWidth = ww - sidebarWidth;
 	$body
 		.toggleClass( 'hidelogo', mapWidth < 140 )
 		.toggleClass( 'narrow', ww < 770 );
@@ -610,7 +682,6 @@ function nationalEnabled() {
 	var didGeoReady;
 	function geoReady() {
 		// TODO: refactor with duplicate code in resizeViewNow()
-		setSidebar();
 		setLegend();
 		resizeViewOnly();
 		if( geoMoveNext ) {
@@ -650,7 +721,6 @@ function nationalEnabled() {
 	function moveToGeo() {
 		var json = geoJSON[current.geoid];
 		if( ! json ) return;
-		var geo = json.departement;
 		$('#map').show();
 		initMap();
 		gme && map && gme.trigger( map, 'resize' );
@@ -660,12 +730,17 @@ function nationalEnabled() {
 		
 		outlineFeature( null );
 		
-		if( current.geoid == 'FR' ) {
-			geo = {
+		var geo = {
+			'FR': {
 				bbox: [ -1060000, 5060000, 1070000, 6650000 ],
 				centerLL: [ 0.2104, 46.2260 ]
-			};
-		}
+			},
+			'988': {
+				bbox: [ 18205000, -2600000, 18720000, -2215000 ],
+				centerLL: [ 165.85, -21.13 ]
+			},
+			_: 0
+		}[current.geoid] || json.departement;
 		geo && fitBbox( geo.bbox, geo.centerLL );
 	}
 	
@@ -708,12 +783,22 @@ function nationalEnabled() {
 		if( bboxOverlay )
 			bboxOverlay.setMap( null );
 		bboxOverlay = null;
-		var feature = {
+		var geo = makeBboxGeo( bbox, {
 			fillColor: '#000000',
 			fillOpacity: 0,
 			strokeWidth: 1,
 			strokeColor: '#FF0000',
-			strokeOpacity: .5,
+			strokeOpacity: .5
+		});
+		bboxOverlay = new PolyGonzo.PgOverlay({
+			map: map,
+			geos: [ geo ]
+		});
+		bboxOverlay.setMap( map );
+	}
+	
+	function makeBboxGeo( bbox, settings ) {
+		var feature = $.extend( {}, {
 			geometry: {
 				type: 'Polygon',
 				coordinates: [
@@ -726,21 +811,16 @@ function nationalEnabled() {
 					]
 				]
 			}
-		};
-		bboxOverlay = new PolyGonzo.PgOverlay({
-			map: map,
-			geos: [{
-				crs: {
-					type: 'name',
-					properties: {
-						name: 'urn:ogc:def:crs:EPSG::3857'
-					}
-				},
-				//kind: where.geo.kind,
-				features: [ feature ]
-			}]
-		});
-		bboxOverlay.setMap( map );
+		}, settings );
+		return {
+			crs: {
+				type: 'name',
+				properties: {
+					name: 'urn:ogc:def:crs:EPSG::3857'
+				}
+			},
+			features: [ feature ]
+		}
 	}
 	
 	var  mouseFeature;
@@ -760,6 +840,15 @@ function nationalEnabled() {
 				gotoGeo( '00', 'zoom' );
 		});
 */
+	}
+	
+	function maybeGo( where, feature, why ) {
+		if(
+			where.geo.id == 'FR'  &&
+			feature.id != current.geoid  &&
+			feature.click !== false
+		)
+			gotoGeo( feature, why );
 	}
 	
 	var touch;
@@ -784,9 +873,11 @@ function nationalEnabled() {
 				var feature = where && where.feature;
 				if( feature == mouseFeature ) return;
 				mouseFeature = feature;
+				if( feature && feature.id == current.geoid )
+					where = feature = null;
 				var cursor =
 					! feature ? null :
-					where.geo.id == 'FR' ? 'pointer' :
+					where.geo.id == 'FR'  &&  feature.click !== false ? 'pointer' :
 					'default';
 				map.setOptions({ draggableCursor: cursor });
 				outlineFeature( where );
@@ -812,8 +903,7 @@ function nationalEnabled() {
 				touch.moveTip = true;
 			}
 			else {
-				if( where.geo.id == 'FR' )
-					gotoGeo( feature, 'tap' );
+				maybeGo( where, feature, 'tap' );
 			}
 		},
 		touchcancel: function( event, where ) {
@@ -836,16 +926,18 @@ function nationalEnabled() {
 				this.touchend( event, where );
 			}
 			else {
-				if( where.geo.id == 'FR' )
-					gotoGeo( feature, 'click' );
+				maybeGo( where, feature, 'click' );
 			}
 		}
 	};
 	
 	function draw() {
+		var geos = currentGeos();
+		if( useInset() )
+			geos.unshift( insetGeo() );
 		var overlay = new PolyGonzo.PgOverlay({
 			map: map,
-			geos: currentGeos(),
+			geos: geos,
 			underlay: getInsetUnderlay,
 			events: playType() ? {} : polyEvents
 		});
@@ -895,7 +987,7 @@ function nationalEnabled() {
 	
 	function colorVotes( features, strokeColor, strokeOpacity, strokeWidth ) {
 		var time = now() + times.offset;
-		var results = currentGeo().results;
+		var results = geoResults();
 		var col = results && results.cols;
 		var candidates = results && results.candidates;
 		if( !( candidates && currentCandidate ) ) {
@@ -963,7 +1055,6 @@ function nationalEnabled() {
 	}
 	
 	function useInset() {
-	  return false;
 		if( ! current.national ) return false;
 		var zoom = map.getZoom();
 		return zoom >= 3  &&  zoom <= 6;
@@ -997,9 +1088,10 @@ function nationalEnabled() {
 			inset( 974, 5.8, -200, -1190 );  // La Reunion
 			inset( 975, 6.8, -200, -1140 );  // Saint Pierre et Miquelon
 			inset( 976, 7.2, -150, -1340 );  // Mayotte
-			inset( 986, 7.5, -150, -1290 );  // Wallis-et-Futuna
-			inset( 987, 4, -150, -1240 );  // Polynesie Francais
-			inset( 988, 3.4, -150, -1190 );  // Nouvelle Caledoni
+			inset( 988, 3.6, -150, -1290 );  // Nouvelle Caledoni
+			inset( 987, 6.2, -150, -1240 );  // Polynesie Francais
+			inset( 986, 7.5, -150, -1190 );  // Wallis-et-Futuna
+			inset( '099', 4.4, -150, -1140 );  // Francais de l'Etranger
 			
 			// Wallis-et-Futuna
 			var feature = geoJSON.FR.departement.features.by[986];
@@ -1008,10 +1100,13 @@ function nationalEnabled() {
 				var ring = poly[0];
 				var coord = ring[0];
 				if( coord[0] < -19700000 )
-					action( poly, 7.5, -30, -1350 );
+					action( poly, 7.5, -30, -1250 );
 				else
-					action( poly, 7.5, -255, -1235 );
+					action( poly, 7.5, -257, -1132 );
 			});
+			
+			// Francais de l'Etranger (French living abroad)
+			geoJSON.FR.departement.features.by['099'].draw = ( action == set );
 		}
 		if( ! geoJSON.FR ) return null;
 		var featuresDept = geoJSON.FR.departement.features.by;
@@ -1033,7 +1128,7 @@ function nationalEnabled() {
 				var j = Math.floor( y / size );
 				var ids = [
 					[ 971, 972, 973, 974, 975 ],
-					[ 976, 986, 987, 988, 0 ]
+					[ 976, 988, 987, 986, '099' ]
 				];
 				var id = ids[i][j], feature = featuresDept[id];
 				if( feature ) {
@@ -1059,6 +1154,20 @@ function nationalEnabled() {
 				return null;
 			}
 		};
+	}
+	
+	function insetGeo() {
+		var bbox = [ -1072000, 5420000, -600000, 6700000 ];
+		var geo = makeBboxGeo( bbox, {
+			fillColor: '#F8F8F8',
+			fillOpacity: 1,
+			strokeWidth: 1.5,
+			strokeColor: '#222222',
+			strokeOpacity: 1
+		});
+		geo.hittest = false;
+		geo.click = false;
+		return geo;
 	}
 	
 	function hittestBboxes( features, places, x, y ) {
@@ -1182,7 +1291,7 @@ function nationalEnabled() {
 			border = '#C2C2C2';
 			photo = S(
 				'background:url(',
-					imgUrl( S( 'candidate-photos-eg-', year, '-', size, '.png' ) ),
+					imgUrl( S( 'candidate-photos-fr-', params.year, '-', size, '.png' ) ),
 				'); ',
 				'background-position:-',
 				election.candidates.by.id[candidate.id].index * size, 'px 0px; '
@@ -1248,106 +1357,18 @@ function nationalEnabled() {
 	}
 	
 	function setLegend() {
-		$('#legend').html( formatLegend() );
+		makeCurrentCandidateValid();
+		$('#topbar').html( formatTopbar() );
+		$('#sidebar').html( formatSidebar() );
 	}
 	
-	function formatLegend() {
-		return useSidebar ? formatSidebar() : formatTopbar();
-	}
-	
-	function formatTopbar() {
-		var candidatesHTML = '';
-		var results = state.delegates;
-		if( results ) {
-			var topCandidates = getTopCandidates( results, -1, 'delegates', 4 );
-			//var top = formatTopbarTopCandidates( topCandidates );
-			var candidates =
-				topCandidates.length ? topCandidates.map( formatTopbarCandidate ) :
-				formatTopbarCandidate({});
-			candidatesHTML = [ /*top*/ ].concat( candidates ).join('');
-		}
-		var test = testFlag( results );
-		return S(
-			'<div id="topbar" style="position:relative;">',
-				'<div class="topbar-header" style="float:left;">',
-					'<div id="election-title" class="title-text">',
-						'topbarTitle'.T(),
-					'</div>',
-					'<div id="election-subtitle" class="subtitle-text" style="',
-						test ? 'color:red; font-weight:bold;' : '',
-					'">',
-						test ? 'testData'.T() : 'topbarSubtitle'.T(),
-					'</div>',
-					'<div class="subtitle-text">',
-						'delegatesAttrib'.T(),
-					'</div>',
-				'</div>',
-				'<div id="topbar-candidates" style="position:relative; float:right;">',
-					candidatesHTML,
-					'<div style="clear:both;">',
-					'</div>',
-				'</div>',
-				'<div style="clear:both;">',
-				'</div>',
-			'</div>'
-		);
-	}
-	
-	//function formatTopbarTopCandidates( topCandidates ) {
-	//	var colors = topCandidates.map( function( candidate ) {
-	//		return candidate.color;
-	//	});
-	//	var selected = currentCandidate ? '' : ' selected';
-	//	return S(
-	//		'<td class="legend-candidate', selected, '" id="legend-candidate-top">',
-	//			'<div class="legend-candidate">',
-	//				formatSpanColorPatch( colors, 2 ),
-	//				'&nbsp;', 'allCandidatesShort'.T(), '&nbsp;',
-	//			'</div>',
-	//		'</td>'
-	//	);
-	//}
-	
-	function formatTopbarCandidate( candidate ) {
-		var selected = ( candidate.id === currentCandidate ) ? ' selected' : '';
-		var delegates = candidate.delegates;
-		if( params.triple ) delegates = 999;
-		return S(
-			'<div style="float:left; padding:6px 5px 1px 12px;">',
-				'<table cellpadding="0" cellspacing="0">',
-					'<tr class="legend-candidate', selected, '" id="legend-candidate-', candidate.id, '">',
-						'<td class="left">',
-							'<div class="topbar-delegates" style="text-align:center; margin:-1px 0 0 2px;">',
-								candidate.delegates == null ? ' ' :
-									formatNumber( delegates ),
-							'</div>',
-							'<div style="margin-left:2px;">',
-								formatDivColorPatch(
-									candidate.color || 'white',
-									delegates < 100 ? 23 : 34,
-									12, '1px solid transparent'
-								),
-							'</div>',
-						'</td>',
-						'<td>',
-							'<div style="padding:2px 1px;">',
-								formatCandidateIcon( candidate, 32 ),
-							'</div>',
-						'</td>',
-						'<td class="right">',
-							'<div class="candidate-name" style="margin-right:2px;">',
-								'<div class="first-name">',
-									candidate.firstName || '&nbsp;',
-								'</div>',
-								'<div class="last-name">',
-									candidate.lastName || '&nbsp;',
-								'</div>',
-							'</div>',
-						'</td>',
-					'</tr>',
-				'</table>',
-			'</div>'
-		);
+	function makeCurrentCandidateValid() {
+		if( ! currentCandidate )
+			return;
+		var results = geoResults();
+		var col = results.colsById[ 'TabCount-' + currentCandidate ];
+		if( ! results.totals[col] )
+			currentCandidate = null;
 	}
 	
 	function nameCase( name ) {
@@ -1365,11 +1386,10 @@ function nationalEnabled() {
 	}
 	
 	function formatSidebar() {
-		// TODO: refactor with formatTopbar()
 		var resultsHeaderHTML = '';
 		var resultsScrollingHTML = '';
 		var geo = currentGeo();
-		var results = geo.results;
+		var results = geoResults();
 		if( results ) {
 			var topCandidates = getTopCandidates( results, -1, 'votes' );
 			var none = ! topCandidates.length;
@@ -1586,13 +1606,13 @@ function nationalEnabled() {
 		if( ! feature ) return null;
 		var geoid = where.feature.id;
 		var future = false;
-		var geo = where.geo, results = geo.results, col = results && results.colsById;
+		var geo = where.geo, results = geoResults(geo), col = results && results.colsById;
 		var row = geo.draw !== false  &&  featureResults( results, where.feature );
 		var top = [];
 		if( row  &&  col  &&  mayHaveResults(row,col) ) {
 			row.geoid = geoid;
 			row.geo = geo;
-			top = getTopCandidates( results, row, 'votes', /*useSidebar ? 0 :*/ 4 );
+			top = getTopCandidates( results, row, 'votes', 4 );
 			var content = S(
 				'<div class="tipcontent">',
 					formatCandidateList( top, formatListCandidate, true ),
@@ -1615,9 +1635,10 @@ function nationalEnabled() {
 			'waitingForVotes'.T();
 		
 		var clickForLocal =
-			top.length && current.national ? S(
+			top.length &&
+			current.national ? S(
 				'<div class="click-for-local faint-text">',
-					( touch ? 'tapForLocal' : 'clickForLocal' ).T(),
+					( feature.click === false ? 'noLocal' : touch ? 'tapForLocal' : 'clickForLocal' ).T(),
 				'</div>'
 			) : '';
 		// TODO
@@ -1748,6 +1769,7 @@ function nationalEnabled() {
 		//var select = $('#stateSelector')[0];
 		//select && ( select.selectedIndex = state.selectorIndex );
 		//opt.state = state.abbr.toLowerCase();
+		outlineFeature( null );
 		geoMoveNext = true;
 		loadViewID( id );
 		if( why ) analytics( why, 'geo', id );
@@ -1844,8 +1866,9 @@ function nationalEnabled() {
 			setCounties( this.checked );
 		});
 		
-		var $legend = $('#legend');
-		$legend.delegate( 'tr.legend-candidate', {
+		var $topbar = $('#topbar');
+		var $sidebar = $('#sidebar');
+		$sidebar.delegate( 'tr.legend-candidate', {
 			mouseover: function( event ) {
 				$(this).addClass( 'hover' );
 			},
@@ -1861,7 +1884,7 @@ function nationalEnabled() {
 			}
 		});
 		
-		$legend.delegate( 'a', {
+		$topbar.delegate( 'a', {
 			mouseover: function( event ) {
 				$(this).addClass( 'hover' );
 			},
@@ -1870,24 +1893,50 @@ function nationalEnabled() {
 			}
 		});
 		
-		$legend.delegate( '#viewNational', {
+		$topbar.delegate( '#btn2007,#btn2012', {
+			click: function( event ) {
+				setYear( this.id.replace(/^btn/, '' ) );
+				event.preventDefault();
+			}
+		});
+		
+		$topbar.delegate( '#btnRound1,#btnRound2', {
+			click: function( event ) {
+				setRound( this.id.replace(/^btnRound/, '' ) );
+				event.preventDefault();
+			}
+		});
+		
+		$sidebar.delegate( '#viewNational', {
 			click: function( event ) {
 				gotoGeo( 'FR', 'return' );
 				event.preventDefault();
 			}
 		});
 		
-		$legend.delegate( '#btnCycle', {
-			click: function( event ) {
-				toggleCycle();
-			}
-		});
+		//$sidebar.delegate( '#btnCycle', {
+		//	click: function( event ) {
+		//		toggleCycle();
+		//	}
+		//});
 		
 		setCandidate = function( id, why ) {
 			currentCandidate = id;
 			loadView();
 			if( why ) analytics( why, 'candidate', id || 'all' );
 		}
+	}
+	
+	function setRound( round ) {
+		params.round = round;
+		setElection();
+		loadView();
+	}
+	
+	function setYear( year ) {
+		params.year = year;
+		setElection();
+		loadView();
 	}
 	
 	function toggleCycle() {
@@ -1954,20 +2003,18 @@ function nationalEnabled() {
 			top: Math.floor( wh/2 - 20 )
 		});
 		
-		var mapLeft = 0, mapTop = 0, mapWidth = ww, mapHeight = wh;
-		if( useSidebar ) {
-			mapLeft = sidebarWidth;
-			mapWidth -= mapLeft;
-			//var $sidebarScroll = $('#sidebar-scroll');
-			//$sidebarScroll.height( wh - $sidebarScroll.offset().top );
-		}
-		else {
-			var topbarHeight = $('#topbar').height() + 1;
-			//if( topbarHeight > 50 )  // two rows
-			//	$('#topbar-candidates').css({ float:'left' });
-			mapTop = topbarHeight;
-			mapHeight -= mapTop;
-		}
+		$('#topbar').css({
+			position: 'absolute',
+			left: sidebarWidth,
+			top: 0,
+			width: ww - sidebarWidth
+		});
+		var topbarHeight = $('#topbar').height() + 1;
+		var mapLeft = sidebarWidth, mapTop = topbarHeight;
+		var mapWidth = ww - mapLeft, mapHeight = wh - mapTop;
+		//var $sidebarScroll = $('#sidebar-scroll');
+		//$sidebarScroll.height( wh - $sidebarScroll.offset().top );
+		
 		mapPixBounds = $('#map')
 			.css({
 				position: 'absolute',
@@ -1992,6 +2039,11 @@ function nationalEnabled() {
 	//		callback();
 	//	});
 	//}
+	
+	function geoResults( geo ) {
+		var results = ( geo || currentGeo() || {} ).results;
+		return results[electionKey];
+	}
 	
 	var cacheResults = new Cache;
 	
@@ -2141,7 +2193,8 @@ function nationalEnabled() {
 			cacheResults.add( json.electionid, json, opt.resultCacheTime );
 		
 		var geo = currentGeo();  //  geoJSON[current.geoid];
-		var results = geo.results = json.table;
+		geo.results = geo.results || {};
+		var results = geo.results[electionKey] = json.table;
 		results.mode = json.mode;
 		var zero = ( json.mode == 'test'  &&  ! debug );
 		
