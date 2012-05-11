@@ -47,7 +47,7 @@ if( params.date ) {
 }
 
 var current = {
-	geoid: 'FR',
+	geoid: 'EG',
 	national: true
 };
 
@@ -431,14 +431,14 @@ function nationalEnabled() {
 	function loadRegion( geoid ) {
 		var level =
 			params.level != null ? params.level :
-			geoid == 'FR' ? '4096' : '';
+			geoid == 'EG' ? '4096' : '';
 		geoid = geoid || current.geoid;
 		var json = geoJSON[geoid];
 		if( json ) {
 			loadGeoJSON( json, true );
 		}
 		else {
-			var file = S( 'france', '-', geoid, '-goog_geom', level, '.js' );
+			var file = S( 'egypt', '-', geoid, '-goog_geom', level, '.js' );
 			getGeoJSON( 'shapes/json/' + file );
 		}
 	}
@@ -469,7 +469,7 @@ function nationalEnabled() {
 		}
 		var geoid = ( json.commune || json.departement ).id;
 		current.geoid = geoid;
-		current.national = ( geoid == 'FR' );
+		current.national = ( geoid == 'EG' );
 		if( ! geoJSON[geoid] ) {
 			geoJSON[geoid] = json;
 			for( var kind in json ) {
@@ -494,8 +494,8 @@ function nationalEnabled() {
 	}
 	
 	var tweakGeoJSON = {
-		FR: function( json, geoid ) {
-			var features = geoJSON.FR.departement.features;
+		EG: function( json, geoid ) {
+			var features = geoJSON.EG.departement.features;
 			features.by['986'].click = false;  // Wallis et Futuna
 			features.by['987'].click = false;  // French Polynesia
 			addLivingAbroad( features );
@@ -711,10 +711,10 @@ function nationalEnabled() {
 	
 	function currentGeos() {
 		var json = geoJSON[current.geoid];
-		var jsonFR = geoJSON['FR'];
-		jsonFR.departement.draw = ! json.commune;
+		var jsonEG = geoJSON['EG'];
+		jsonEG.departement.draw = ! json.commune;
 		return json.commune ?
-				[ json.commune, json.departement, jsonFR.departement ] :
+				[ json.commune, json.departement, jsonEG.departement ] :
 				[ json.departement, json.region, json.nation ];
 	}
 	
@@ -731,7 +731,7 @@ function nationalEnabled() {
 		outlineFeature( null );
 		
 		var geo = {
-			'FR': {
+			'EG': {
 				bbox: [ -1060000, 5060000, 1070000, 6650000 ],
 				centerLL: [ 0.2104, 46.2260 ]
 			},
@@ -844,7 +844,7 @@ function nationalEnabled() {
 	
 	function maybeGo( where, feature, why ) {
 		if(
-			where.geo.id == 'FR'  &&
+			where.geo.id == 'EG'  &&
 			feature.id != current.geoid  &&
 			feature.click !== false
 		)
@@ -877,7 +877,7 @@ function nationalEnabled() {
 					where = feature = null;
 				var cursor =
 					! feature ? null :
-					where.geo.id == 'FR'  &&  feature.click !== false ? 'pointer' :
+					where.geo.id == 'EG'  &&  feature.click !== false ? 'pointer' :
 					'default';
 				map.setOptions({ draggableCursor: cursor });
 				outlineFeature( where );
@@ -1095,7 +1095,7 @@ function nationalEnabled() {
 			inset( '099', 4.4, -150, -1140 );  // Francais de l'Etranger
 			
 			// Wallis-et-Futuna
-			var feature = geoJSON.FR.departement.features.by[986];
+			var feature = geoJSON.EG.departement.features.by[986];
 			feature.geometry.coordinates.forEach( function( poly ) {
 				poly.centroid = feature.centroid;  // hack
 				var ring = poly[0];
@@ -1107,11 +1107,11 @@ function nationalEnabled() {
 			});
 			
 			// Francais de l'Etranger (French living abroad)
-			geoJSON.FR.departement.features.by['099'].draw = ( action == set );
+			geoJSON.EG.departement.features.by['099'].draw = ( action == set );
 		}
-		if( ! geoJSON.FR ) return null;
-		var featuresDept = geoJSON.FR.departement.features.by;
-		var featuresRgn = geoJSON.FR.region.features.by;
+		if( ! geoJSON.EG ) return null;
+		var featuresDept = geoJSON.EG.departement.features.by;
+		var featuresRgn = geoJSON.EG.region.features.by;
 		if( ! useInset() ) {
 			insetAll( clear );
 			return null;
@@ -1134,14 +1134,14 @@ function nationalEnabled() {
 				var id = ids[i][j], feature = featuresDept[id];
 				if( feature ) {
 					return {
-						geo: geoJSON.FR.departement,
+						geo: geoJSON.EG.departement,
 						feature: feature
 					}
 				}
 /*
 				if( image.abbr )
 					return {
-						geo: geoJSON.FR.departement,
+						geo: geoJSON.EG.departement,
 						feature: features.by[image.abbr]
 					}
 				var feature =
@@ -1910,7 +1910,7 @@ function nationalEnabled() {
 		
 		$sidebar.delegate( '#viewNational', {
 			click: function( event ) {
-				gotoGeo( 'FR', 'return' );
+				gotoGeo( 'EG', 'return' );
 				event.preventDefault();
 			}
 		});

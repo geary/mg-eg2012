@@ -1,5 +1,5 @@
 application: egypt-election-2012-demo
-version: eg2012
+version: eg-geojson
 runtime: python27
 threadsafe: no
 api_version: 1
