@@ -1,4 +1,4 @@
-// elections-fr.js
+// elections.js
 // By Michael Geary - http://mg.to/
 // See UNLICENSE or http://unlicense.org/ for public domain notice.
 
