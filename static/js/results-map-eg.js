@@ -1055,6 +1055,7 @@ function nationalEnabled() {
 	}
 	
 	function useInset() {
+	  return false;
 		if( ! current.national ) return false;
 		var zoom = map.getZoom();
 		return zoom >= 3  &&  zoom <= 6;
