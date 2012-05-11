@@ -29,7 +29,7 @@ opt.randomized = params.randomize || params.zero;
 var defaultElectionKey = '2012-pres-1';
 params.year = params.year || '2012';
 params.contest = params.contest || 'pres';
-params.round = params.round || '2';
+params.round = params.round || '1';
 
 var electionKey, election;
 setElection();
@@ -372,8 +372,8 @@ function formatSidebarTable( cells ) {
 
 	function formatTopbar() {
 		return S(
-			'<div id="topbar-content" style="position:relative;">',
-				'<div style="margin:0; padding:3px; float:right;">',
+			// '<div id="topbar-content" style="position:relative;">',
+				// '<div style="margin:0; padding:3px; float:right;">',
 					//'<a class="button', params.year == 2007 ? ' selected' : '', '" id="btn2007">',
 					//	2007,
 					//'</a>',
@@ -381,18 +381,18 @@ function formatSidebarTable( cells ) {
 					//'<a class="button', params.year == 2012 ? ' selected' : '', '" id="btn2012">',
 					//	2012,
 					//'</a>',
-					'&nbsp;&nbsp;&nbsp;',
-					'<a class="button', params.round == 1 ? ' selected' : '', '" id="btnRound1">',
-						'round1'.T(),
-					'</a>',
-					'&nbsp;',
-					'<a class="button', params.round == 2 ? ' selected' : '', '" id="btnRound2">',
-						'round2'.T(),
-					'</a>',
-				'</div>',
-				'<div style="clear:both;">',
-				'</div>',
-			'</div>'
+					// '&nbsp;&nbsp;&nbsp;',
+					// '<a class="button', params.round == 1 ? ' selected' : '', '" id="btnRound1">',
+						// 'round1'.T(),
+					// '</a>',
+					// '&nbsp;',
+					// '<a class="button', params.round == 2 ? ' selected' : '', '" id="btnRound2">',
+						// 'round2'.T(),
+					// '</a>',
+				// '</div>',
+				// '<div style="clear:both;">',
+				// '</div>',
+			// '</div>'
 		);
 	}
 	
