@@ -431,7 +431,7 @@ function nationalEnabled() {
 	function loadRegion( geoid ) {
 		var level =
 			params.level != null ? params.level :
-			geoid == 'EG' ? '4096' : '';
+			geoid == 'EG' ? '95' : '';
 		geoid = geoid || current.geoid;
 		var json = geoJSON[geoid];
 		if( json ) {
@@ -467,7 +467,7 @@ function nationalEnabled() {
 				initSelectors();
 			}
 		}
-		var geoid = ( json.commune || json.departement ).id;
+		var geoid = ( json.district || json.governorate ).id;
 		current.geoid = geoid;
 		current.national = ( geoid == 'EG' );
 		if( ! geoJSON[geoid] ) {
@@ -495,10 +495,7 @@ function nationalEnabled() {
 	
 	var tweakGeoJSON = {
 		EG: function( json, geoid ) {
-			var features = geoJSON.EG.departement.features;
-			features.by['986'].click = false;  // Wallis et Futuna
-			features.by['987'].click = false;  // French Polynesia
-			addLivingAbroad( features );
+			//var features = geoJSON.EG.governorate.features;
 		}
 	}
 	
@@ -712,10 +709,10 @@ function nationalEnabled() {
 	function currentGeos() {
 		var json = geoJSON[current.geoid];
 		var jsonEG = geoJSON['EG'];
-		jsonEG.departement.draw = ! json.commune;
-		return json.commune ?
-				[ json.commune, json.departement, jsonEG.departement ] :
-				[ json.departement, json.region, json.nation ];
+		jsonEG.governorate.draw = ! json.district;
+		return json.district ?
+				[ json.district, json.governorate, jsonEG.governorate ] :
+				[ json.governorate, json.nation ];
 	}
 	
 	function moveToGeo() {
@@ -731,16 +728,16 @@ function nationalEnabled() {
 		outlineFeature( null );
 		
 		var geo = {
-			'EG': {
-				bbox: [ -1060000, 5060000, 1070000, 6650000 ],
-				centerLL: [ 0.2104, 46.2260 ]
-			},
-			'988': {
-				bbox: [ 18205000, -2600000, 18720000, -2215000 ],
-				centerLL: [ 165.85, -21.13 ]
-			},
+			//'EG': {
+			//	bbox: [ -1060000, 5060000, 1070000, 6650000 ],
+			//	centerLL: [ 0.2104, 46.2260 ]
+			//},
+			//'988': {
+			//	bbox: [ 18205000, -2600000, 18720000, -2215000 ],
+			//	centerLL: [ 165.85, -21.13 ]
+			//},
 			_: 0
-		}[current.geoid] || json.departement;
+		}[current.geoid] || json.governorate;
 		geo && fitBbox( geo.bbox, geo.centerLL );
 	}
 	
@@ -964,14 +961,13 @@ function nationalEnabled() {
 	
 	function colorize() {
 		var json = geoJSON[current.geoid];
-		if( json.commune ) {
-			colorVotes( json.commune.features, '#666666', 1, 1 );
-			colorSimple( json.departement.features, '#FFFFFF', '#444444', 1, 2 );
+		if( json.district ) {
+			colorVotes( json.district.features, '#666666', 1, 1 );
+			colorSimple( json.governorate.features, '#FFFFFF', '#444444', 1, 2 );
 		}
 		else {
-			colorVotes( json.departement.features, '#666666', 1, 1 );
-			colorSimple( json.region.features, '#FFFFFF', '#444444', 1, 1.5 );
-			colorSimple( json.nation.features, '#FFFFFF', '#222222', 1, 2 );
+			colorVotes( json.governorate.features, '#666666', 1, 1 );
+			//colorSimple( json.nation.features, '#FFFFFF', '#222222', 1, 2 );
 		}
 	}
 	
@@ -1055,106 +1051,11 @@ function nationalEnabled() {
 	}
 	
 	function useInset() {
-	  return false;
-		if( ! current.national ) return false;
-		var zoom = map.getZoom();
-		return zoom >= 3  &&  zoom <= 6;
+		return false;
 	}
 	
 	function getInsetUnderlay() {
-		var zoom = map.getZoom();
-		var extra = zoom - 5;
-		var pow = Math.pow( 2, extra );
-		var size = 50 * pow;
-		function clear( feature ) {
-			delete feature.zoom;
-			delete feature.offset;
-		}
-		function set( feature, z, x, y ) {
-			var p = PolyGonzo.Mercator.coordToPixel( feature.centroid, z );
-			feature.zoom = z + extra;
-			feature.offset = { x: ( x - p[0] ) * pow, y: ( y - p[1] ) * pow };
-		}
-		function insetAll( action ) {
-			function inset( id, z, x, y ) {
-				var feature = featuresDept[id];
-				action( feature, z, x, y );
-				var featureRgn = featuresRgn['0'+feature.code_reg];
-				if( featureRgn )
-					action( featureRgn, z, x, y );
-			}
-			inset( 971, 6.1, -200, -1340 );  // Guadeloupe
-			inset( 972, 6.2, -200, -1290 );  // Martinique
-			inset( 973, 3.3, -200, -1240 );  // Guyane
-			inset( 974, 5.8, -200, -1190 );  // La Reunion
-			inset( 975, 6.8, -200, -1140 );  // Saint Pierre et Miquelon
-			inset( 976, 7.2, -150, -1340 );  // Mayotte
-			inset( 988, 3.6, -150, -1290 );  // Nouvelle Caledoni
-			inset( 987, 6.2, -150, -1240 );  // Polynesie Francais
-			inset( 986, 7.5, -150, -1190 );  // Wallis-et-Futuna
-			inset( '099', 4.4, -150, -1140 );  // Francais de l'Etranger
-			
-			// Wallis-et-Futuna
-			var feature = geoJSON.EG.departement.features.by[986];
-			feature.geometry.coordinates.forEach( function( poly ) {
-				poly.centroid = feature.centroid;  // hack
-				var ring = poly[0];
-				var coord = ring[0];
-				if( coord[0] < -19700000 )
-					action( poly, 7.5, -30, -1250 );
-				else
-					action( poly, 7.5, -257, -1132 );
-			});
-			
-			// Francais de l'Etranger (French living abroad)
-			geoJSON.EG.departement.features.by['099'].draw = ( action == set );
-		}
-		if( ! geoJSON.EG ) return null;
-		var featuresDept = geoJSON.EG.departement.features.by;
-		var featuresRgn = geoJSON.EG.region.features.by;
-		if( ! useInset() ) {
-			insetAll( clear );
-			return null;
-		}
-		insetAll( set );
-		var images = [{
-			//src: imgUrl('insets-fr.png'),
-			width: size * 2, height: size * 5,
-			left: -225 * pow, top: -1365 * pow
-		}];
-		return {
-			images: images,
-			hittest: function( image, x, y ) {
-				var i = Math.floor( x / size );
-				var j = Math.floor( y / size );
-				var ids = [
-					[ 971, 972, 973, 974, 975 ],
-					[ 976, 988, 987, 986, '099' ]
-				];
-				var id = ids[i][j], feature = featuresDept[id];
-				if( feature ) {
-					return {
-						geo: geoJSON.EG.departement,
-						feature: feature
-					}
-				}
-/*
-				if( image.abbr )
-					return {
-						geo: geoJSON.EG.departement,
-						feature: features.by[image.abbr]
-					}
-				var feature =
-					x < 81 ? features.by.AK || features.by['02'] :
-					view != 'county' ? features.by.HI :
-					hittestBboxes( features, bboxesInsetHI, x, y );
-				if( feature )
-					return { geo: stateUS.geo, feature: feature }
-*/
-
-				return null;
-			}
-		};
+		return null;
 	}
 	
 	function insetGeo() {
@@ -1441,7 +1342,7 @@ function nationalEnabled() {
 			'<div id="sidebar">',
 				'<div class="sidebar-header">',
 					'<div id="election-title" class="title-text">',
-						//geo.nation ? geo.nation.name : geo.commune.name,
+						//geo.nation ? geo.nation.name : geo.district.name,
 						geo.name,
 					'</div>',
 					'<div id="election-date-row" class="" style="margin-bottom:8px; position:relative;">',
