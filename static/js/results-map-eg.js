@@ -431,7 +431,7 @@ function nationalEnabled() {
 	function loadRegion( geoid ) {
 		var level =
 			params.level != null ? params.level :
-			geoid == 'EG' ? '95' : '';
+			geoid == 'EG' ? '95' : '70';
 		geoid = geoid || current.geoid;
 		var json = geoJSON[geoid];
 		if( json ) {
