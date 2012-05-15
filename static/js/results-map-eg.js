@@ -870,7 +870,7 @@ function nationalEnabled() {
 				var feature = where && where.feature;
 				if( feature == mouseFeature ) return;
 				mouseFeature = feature;
-				if( feature && feature.id == current.geoid )
+				if( feature  &&  feature.id == current.geoid  &&  where.geo.id == 'EG' )
 					where = feature = null;
 				var cursor =
 					! feature ? null :
