@@ -495,36 +495,42 @@ function nationalEnabled() {
 	
 	var tweakGeoJSON = {
 		EG: function( json, geoid ) {
-			//var features = geoJSON.EG.governorate.features;
+			var features = geoJSON.EG.governorate.features;
+			addLivingAbroad( features );
 		}
 	}
 	
 	function addLivingAbroad( features ) {
-		var radius = 100000;
-		feature = {
-			bbox: [ -radius, -radius, radius, radius ],
-			centroid: [ 0, 0],
+		var center = { x: 3235000, y: 3730000 };
+		var radius = 30000;
+		var steps = 32;
+		var feature = {
+			bbox: [
+				center.x - radius, center.y - radius,
+				center.x + radius, center.y + radius
+			],
+			centroid: [ center.x, center.y ],
 			click: false,
-			draw: false,
+			//draw: false,
 			geometry: {
-				coordinates: drawCircle( radius, 32 ),
+				coordinates: drawCircle( center, radius, 32 ),
 				type: 'Polygon'
 			},
-			id: '099',
-			name: "Fran&ccedil;ais de l'Etranger",
+			id: '999',
+			name: "Overseas",
 			type: 'Feature'
 		};
 		features.push( feature );
-		features.by['099'] = feature;
+		features.by['999'] = feature;
 	}
 	
-	function drawCircle( radius, steps ) {
+	function drawCircle( center, radius, steps ) {
 		var ring = [];
 		var pi2 = Math.PI * 2;
 		for( var i = 0;  i < steps;  ++i ) {
 			ring.push([
-				radius * Math.sin( i / steps * pi2 ),
-				radius * Math.cos( i / steps * pi2 )
+				center.x + radius * Math.sin( i / steps * pi2 ),
+				center.y + radius * Math.cos( i / steps * pi2 )
 			]);
 		}
 		ring.push( ring[0] );
